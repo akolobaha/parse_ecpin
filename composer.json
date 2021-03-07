@@ -2,9 +2,7 @@
     "require": {
         "somesh/php-query": "^2.0",
         "symfony/polyfill-php72": "^1.22",
-        "symfony/var-dumper": "^5.2"
-    },
-    "require-dev": {
-
+        "symfony/var-dumper": "^5.2",
+        "guzzlehttp/guzzle": "7.0"
     }
 }
