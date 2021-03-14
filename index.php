@@ -9,43 +9,45 @@ $items = file('csv/categories.csv');
 $fp = fopen('csv/categories.csv', 'w');
 
 
-$current = array_pop($items);
+//$current = array_pop($items);
 
 
 // Записываем обратно в файл, за исключением одного
 foreach ($items as $item) {
     $item = trim($item);
     fputcsv($fp, [$item]);
+
+
+    $cat_products_url = getProductsUrlByCategoryUrl($item);
+    parseProducts($cat_products_url);
+
+
 }
 
 fclose($fp);
 
 
-if (file_exists('csv/test.csv')) {
-    $results = file('csv/test.csv');
-} else {
-    $results = [];
-};
+//if (file_exists('csv/test.csv')) {
+//    $results = file('csv/test.csv');
+//} else {
+//    $results = [];
+//};
 
 
-
-
-
-$cat_products_url = getProductsUrlByCategoryUrl($current);
-parseProducts($cat_products_url);
-
-
-
-
+/**
+ * @param $cat_products_url
+ * @throws \GuzzleHttp\Exception\GuzzleException
+ * Парсим продукты для целой категории и дописываем в файл
+ */
 function parseProducts($cat_products_url) {
+    $client = new GuzzleHttp\Client();
+    $fp = fopen('csv/products.csv', 'w');
+
     foreach ($cat_products_url as $product_url) {
-        $client = new GuzzleHttp\Client();
+
         $res = $client->request('GET', $product_url);
         $body = $res->getBody();
-
         $doc = phpQuery::newDocument($body);
-
-
 
         $header = $doc->find('h1')->text();
         $qty = $doc->find('tr:eq(2) td:eq(1)')->text();
@@ -59,10 +61,7 @@ function parseProducts($cat_products_url) {
 
         $img = $doc->find('img.mtov')->attr('src');
 
-        $fp = fopen('csv/products.csv', 'w');
-
         fputcsv($fp, [$product_url, $header, $qty, $package, $year, $price, $status, $img, $cat1, $cat2, $cat3]);
-
     }
 }
 
