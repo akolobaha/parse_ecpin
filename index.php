@@ -6,7 +6,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 $items = file('csv/categories.csv');
 
-$fp = fopen('csv/categories.csv', 'w');
+//$fp = fopen('csv/categories.csv', 'w');
 
 
 //$current = array_pop($items);
@@ -15,16 +15,14 @@ $fp = fopen('csv/categories.csv', 'w');
 // Записываем обратно в файл, за исключением одного
 foreach ($items as $item) {
     $item = trim($item);
-    fputcsv($fp, [$item]);
-
+//    fputcsv($fp, [$item]);
 
     $cat_products_url = getProductsUrlByCategoryUrl($item);
     parseProducts($cat_products_url);
 
-
 }
 
-fclose($fp);
+//fclose($fp);
 
 
 //if (file_exists('csv/test.csv')) {
@@ -41,13 +39,17 @@ fclose($fp);
  */
 function parseProducts($cat_products_url) {
     $client = new GuzzleHttp\Client();
-    $fp = fopen('csv/products.csv', 'w');
+    $fp = fopen('csv/products.csv', 'a');
 
     foreach ($cat_products_url as $product_url) {
 
         $res = $client->request('GET', $product_url);
         $body = $res->getBody();
         $doc = phpQuery::newDocument($body);
+
+
+        $product_id = explode('=', $product_url);
+        $product_id = array_pop($product_id);
 
         $header = $doc->find('h1')->text();
         $qty = $doc->find('tr:eq(2) td:eq(1)')->text();
@@ -61,7 +63,7 @@ function parseProducts($cat_products_url) {
 
         $img = $doc->find('img.mtov')->attr('src');
 
-        fputcsv($fp, [$product_url, $header, $qty, $package, $year, $price, $status, $img, $cat1, $cat2, $cat3]);
+        fputcsv($fp, [$product_id, $product_url, $header, $qty, $package, $year, $price, $status, $img, $cat1, $cat2, $cat3]);
     }
 }
 
